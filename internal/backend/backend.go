@@ -4,27 +4,29 @@ import (
 	"net/url"
 	"sync"
 	"sync/atomic"
-	"encoding/json"
-	"strconv"
+	"fmt"
 )
 
 type Backend struct {
 	url *url.URL
-	mu *sync.RWMutex
+	mu sync.RWMutex
 	alive bool
 	activeConnections int64
 }
 
-func NewBackend(newUrl string) (*Backend, error){
-	parcedUrl, err := url.Parse(newUrl)
+func NewBackend(newURL string) (*Backend, error){
+	parsedURL, err := url.Parse(newURL)
 	if err != nil {
-		return &Backend{}, err
+		return nil, fmt.Errorf("Parse URL Error %q: %w", newURL, err)
+	}
+	if parsedURL.Scheme == "" || parsedURL.Host == "" {
+		return nil, fmt.Errorf("invalid URL %q: scheme and host are required", newURL)
 	}
 	return &Backend {
-		parcedUrl,
-		new(sync.RWMutex),
-		true,
-		0,
+		url: parsedURL,
+		mu: sync.RWMutex{},
+		alive: true,
+		activeConnections: 0,
 	}, nil
 }
 
@@ -45,7 +47,7 @@ func (b *Backend) URL () *url.URL{
 	return b.url
 }
 
-func (b *Backend) GetActiveConnections() int64{
+func (b *Backend) ActiveConnections() int64{
 	ans := atomic.LoadInt64(&b.activeConnections)
 	return ans
 }
@@ -59,11 +61,5 @@ func (b *Backend) DecrementConnections() {
 }
 
 func (b *Backend) String() string {
-	ans := map[string]string {
-		"url": b.url.String(),
-		"alive": strconv.FormatBool(b.alive),
-		"active connections": strconv.Itoa(int(b.activeConnections)),
-	}
-	ansString, _ := json.Marshal(ans)
-	return string(ansString)
+	return b.url.String()
 }
