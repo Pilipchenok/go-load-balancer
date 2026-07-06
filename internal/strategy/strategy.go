@@ -1,0 +1,9 @@
+package strategy
+
+import (
+	"go-load-balancer/internal/backend"
+)
+
+type Strategy interface {
+  Next(backends []*backend.Backend) *backend.Backend
+}
