@@ -15,7 +15,7 @@ type Balancer struct {
 	client *http.Client
 }
 
-func New(backs []*backend.Backend, st strategy.Strategy, cl *http.Client) (*Balancer) {
+func NewBalancer(backs []*backend.Backend, st strategy.Strategy, cl *http.Client) (*Balancer) {
 	return &Balancer {
 		backends: backs,
 		strategy: st,
