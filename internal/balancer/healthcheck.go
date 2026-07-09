@@ -8,23 +8,27 @@ import (
 	"go-load-balancer/internal/backend"
 )
 
-func (bl *Balancer) RunHealthCheck(backends []*backend.Backend, ctx context.Context, interval time.Duration) {
+func (bl *Balancer) RunHealthCheck(ctx context.Context, interval time.Duration) {
+	if interval <= 0 {
+		return
+	}
+	bl.checkAll()
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
-			bl.checkAll(backends)
+			bl.checkAll()
 		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (bl *Balancer) checkAll(backends []*backend.Backend) {
-	for i := 0; i < len(backends); i++ {
-		oldAlive := backends[i].IsAlive()
-		newAlive := bl.checkOne(backends[i])
+func (bl *Balancer) checkAll() {
+	for i := 0; i < len(bl.backends); i++ {
+		oldAlive := bl.backends[i].IsAlive()
+		newAlive := bl.checkOne(bl.backends[i])
 		if oldAlive != newAlive {
 			log.Printf("backend%d: %v -> %v", i, oldAlive, newAlive)
 		}
