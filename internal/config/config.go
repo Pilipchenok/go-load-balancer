@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"time"
+	"errors"
 
 	"gopkg.in/yaml.v3"
 )
@@ -26,14 +27,14 @@ func Load(path string) (*Config, error) {
 
 	var config Config
 	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		return nil, err
+	}
 	if config.Port <= 0 ||
 		config.Strategy == "" ||
 		config.HealthCheckInterval == 0 ||
 		len(config.Backends) == 0 {
-			return nil, &yaml.TypeError{}
-	}
-	if err != nil {
-		return nil, err
+			return nil, errors.New("Invalid data")
 	}
 	return &config, nil
 }
