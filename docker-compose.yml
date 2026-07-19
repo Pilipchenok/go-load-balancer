@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  balancer:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+    volumes:
+      - ./configs/config.yaml:/configs/config.yaml
+
+  backend1:
+    image: nginx:alpine
+    expose:
+      - "80"
+
+  backend2:
+    image: nginx:alpine
+    expose:
+      - "80"
+
+  backend3:
+    image: nginx:alpine
+    expose:
+      - "80"
