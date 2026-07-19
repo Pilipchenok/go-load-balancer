@@ -14,6 +14,7 @@ import (
 	"go-load-balancer/internal/balancer"
 	"go-load-balancer/internal/config"
 	"go-load-balancer/internal/strategy"
+	"go-load-balancer/internal/middleware"
 )
 
 func main() {
@@ -60,9 +61,11 @@ func main() {
 		myBalancer.RunHealthCheck(ctx, cfg.HealthCheckInterval)
 	}()
 
+	handler := middleware.LoggingMiddleware(myBalancer)
+
 	server := &http.Server{
     Addr: fmt.Sprintf(":%d", cfg.Port),
-    Handler: myBalancer,
+    Handler: handler,
 	}
 
 	go func() {
